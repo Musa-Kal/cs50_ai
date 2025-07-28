@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+from collections import defaultdict
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -9,7 +10,7 @@ SAMPLES = 10000
 
 def main():
     if len(sys.argv) != 2:
-        sys.exit("Usage: python pagerank.py corpus")
+        sys.exit("Usage: python pagerate.py corpus")
     corpus = crawl(sys.argv[1])
     ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
     print(f"PageRank Results from Sampling (n = {SAMPLES})")
@@ -91,7 +92,10 @@ def sample_pagerank(corpus, damping_factor, n):
         for k, v in trans.items():
             population.append(k)
             weights.append(v)
-        page = random.choice(population, weights=weights)
+        page = random.choices(population, weights=weights)[0]
+    
+    for k in res:
+        res[k] = res[k] / n
         
     return res
 
@@ -105,10 +109,37 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+
+    linking = defaultdict(set)
+    pr = dict()
+    n = len(corpus.keys())
+    for k, v in corpus.items():
+        pr[k] = 1/n
+        for page in v:
+            linking[page].add(k)
+    
+    prob_of_any_page = (1-damping_factor) / n
+    convergence_threshold = 0.001
+
+    while True:
+
+        converged = True
+
+        for k in corpus:
+            prev = pr[k]
+            pr[k] = prob_of_any_page + sum( pr[page] / len(corpus[page]) for page in linking[k] ) * damping_factor
+
+            if abs(prev - pr[k]) > convergence_threshold:
+                converged = False
+
+        if converged:
+            break
+        
+    return pr
 
 
 if __name__ == "__main__":
-    res = transition_model({"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}}, "1.html", DAMPING)
-    print(res)
+    #res = sample_pagerank({"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}},  DAMPING, SAMPLES)
+    # res = iterate_pagerank({"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}}, DAMPING)
+    # print(res)
     main()
