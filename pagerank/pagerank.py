@@ -139,7 +139,4 @@ def iterate_pagerank(corpus, damping_factor):
 
 
 if __name__ == "__main__":
-    #res = sample_pagerank({"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}},  DAMPING, SAMPLES)
-    # res = iterate_pagerank({"1.html": {"2.html", "3.html"}, "2.html": {"3.html"}, "3.html": {"2.html"}}, DAMPING)
-    # print(res)
     main()
