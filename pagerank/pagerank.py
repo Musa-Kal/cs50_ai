@@ -60,7 +60,7 @@ def transition_model(corpus, page, damping_factor):
     """
     df_inv = 1 - damping_factor
     prob_any_page = df_inv / len(corpus.keys())
-    next_page_prob = damping_factor * (1/len(corpus[page]))
+    next_page_prob = damping_factor * ((1/len(corpus[page])) if corpus[page] else 0)
     res = dict()
     for key in corpus:
         res[key] = prob_any_page
