@@ -128,6 +128,20 @@ def powerset(s):
     ]
 
 
+def chance_to_contribute(person, gene_count):
+    if gene_count[person] == 1:
+        return 0.5 * PROBS["mutation"] + 
+
+def get_gene_prob(people, person, person_gene_prob, gene_count):
+    if person in person_gene_prob:
+        return person_gene_prob[person]
+    if people[person]['mother'] == None and people[person]['father'] == None:
+        person_gene_prob[person] = PROBS["gene"][gene_count[person]]
+        return person_gene_prob[person]
+    
+    mother_con = gene_count[people[person]['mother']] * 0.5 * (1-PROBS["mutation"])
+    
+
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -139,7 +153,28 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+
+    res = 1
+    gene_count = {}
+
+    for person in people:
+
+        gene_count[person] = 0
+
+        if person in one_gene:
+            gene_count[person] = 1
+        elif person in two_genes:
+            gene_count[person] = 2
+
+        res *= PROBS["trait"][gene_count[person]][person in have_trait]
+
+    person_gene_prob = {}
+
+    for person in people:
+
+        res *= get_gene_prob(people, person, person_gene_prob, gene_count)
+
+    return res
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
