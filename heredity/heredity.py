@@ -130,7 +130,10 @@ def powerset(s):
 
 def chance_to_contribute(person, gene_count):
     if gene_count[person] == 1:
-        return 0.5 * PROBS["mutation"] + 
+        return 0.5
+    if gene_count[person] == 2:
+        return 1 - PROBS["mutation"]
+    return PROBS["mutation"]
 
 def get_gene_prob(people, person, person_gene_prob, gene_count):
     if person in person_gene_prob:
@@ -139,8 +142,20 @@ def get_gene_prob(people, person, person_gene_prob, gene_count):
         person_gene_prob[person] = PROBS["gene"][gene_count[person]]
         return person_gene_prob[person]
     
-    mother_con = gene_count[people[person]['mother']] * 0.5 * (1-PROBS["mutation"])
-    
+    mother_con = chance_to_contribute(people[person]["mother"], gene_count)
+    father_con = chance_to_contribute(people[person]["father"], gene_count)
+    inv = lambda x: 1-x
+
+    if gene_count[person] == 1:
+        person_gene_prob[person] = mother_con * inv(father_con) + inv(mother_con) * father_con
+    elif gene_count[person] == 2:
+        person_gene_prob[person] = mother_con * father_con
+    else:
+        person_gene_prob[person] = inv(mother_con) * inv(father_con)
+
+    return person_gene_prob[person]
+
+
 
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
@@ -184,6 +199,7 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
+    
     raise NotImplementedError
 
 
@@ -196,4 +212,11 @@ def normalize(probabilities):
 
 
 if __name__ == "__main__":
-    main()
+    p = {
+  'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+  'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+  'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+}
+    res = joint_probability(p, {"Harry"}, {"James"}, {"James"})
+    print(res)
+    #main()
