@@ -130,7 +130,10 @@ def powerset(s):
 
 def chance_to_contribute(person, gene_count):
     if gene_count[person] == 1:
-        return 0.5 * PROBS["mutation"] + 
+        return 0.5
+    if gene_count[person] == 2:
+        return 1 - PROBS["mutation"]
+    return PROBS["mutation"]
 
 def get_gene_prob(people, person, person_gene_prob, gene_count):
     if person in person_gene_prob:
@@ -139,8 +142,20 @@ def get_gene_prob(people, person, person_gene_prob, gene_count):
         person_gene_prob[person] = PROBS["gene"][gene_count[person]]
         return person_gene_prob[person]
     
-    mother_con = gene_count[people[person]['mother']] * 0.5 * (1-PROBS["mutation"])
-    
+    mother_con = chance_to_contribute(people[person]["mother"], gene_count)
+    father_con = chance_to_contribute(people[person]["father"], gene_count)
+    inv = lambda x: 1-x
+
+    if gene_count[person] == 1:
+        person_gene_prob[person] = mother_con * inv(father_con) + inv(mother_con) * father_con
+    elif gene_count[person] == 2:
+        person_gene_prob[person] = mother_con * father_con
+    else:
+        person_gene_prob[person] = inv(mother_con) * inv(father_con)
+
+    return person_gene_prob[person]
+
+
 
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
@@ -184,7 +199,21 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
+    
+    for person in probabilities:
+
+        if person in one_gene:
+            probabilities[person]["gene"][1] += p
+        elif person in two_genes:
+            probabilities[person]["gene"][2] += p
+        else:
+            probabilities[person]["gene"][0] += p
+        
+        if person in have_trait:
+            probabilities[person]["trait"][True] += p
+        else:
+            probabilities[person]["trait"][False] += p
+    
 
 
 def normalize(probabilities):
@@ -192,8 +221,25 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    
+    for person in probabilities:
 
+        total = sum(probabilities[person]["gene"][count] for count in probabilities[person]["gene"])
+
+        for count in probabilities[person]["gene"]:
+            probabilities[person]["gene"][count] = probabilities[person]["gene"][count] / total
+
+        total = sum(probabilities[person]["trait"][count] for count in probabilities[person]["trait"])
+
+        for count in probabilities[person]["trait"]:
+            probabilities[person]["trait"][count] = probabilities[person]["trait"][count] / total
 
 if __name__ == "__main__":
+#     p = {
+#   'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+#   'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+#   'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+# }
+#     res = joint_probability(p, {"Harry"}, {"James"}, {"James"})
+#     print(res)
     main()
