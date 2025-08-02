@@ -200,7 +200,20 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     the person is in `have_gene` and `have_trait`, respectively.
     """
     
-    raise NotImplementedError
+    for person in probabilities:
+
+        if person in one_gene:
+            probabilities[person]["gene"][1] += p
+        elif person in two_genes:
+            probabilities[person]["gene"][2] += p
+        else:
+            probabilities[person]["gene"][0] += p
+        
+        if person in have_trait:
+            probabilities[person]["trait"][True] += p
+        else:
+            probabilities[person]["trait"][False] += p
+    
 
 
 def normalize(probabilities):
@@ -208,15 +221,25 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    
+    for person in probabilities:
 
+        total = sum(probabilities[person]["gene"][count] for count in probabilities[person]["gene"])
+
+        for count in probabilities[person]["gene"]:
+            probabilities[person]["gene"][count] = probabilities[person]["gene"][count] / total
+
+        total = sum(probabilities[person]["trait"][count] for count in probabilities[person]["trait"])
+
+        for count in probabilities[person]["trait"]:
+            probabilities[person]["trait"][count] = probabilities[person]["trait"][count] / total
 
 if __name__ == "__main__":
-    p = {
-  'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
-  'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
-  'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
-}
-    res = joint_probability(p, {"Harry"}, {"James"}, {"James"})
-    print(res)
-    #main()
+#     p = {
+#   'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+#   'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+#   'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+# }
+#     res = joint_probability(p, {"Harry"}, {"James"}, {"James"})
+#     print(res)
+    main()
