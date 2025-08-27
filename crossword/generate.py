@@ -121,7 +121,7 @@ class CrosswordCreator():
         
         revision = False
         x_overlap, y_overlap = self.crossword.overlaps[x, y]
-        alph_present = defaultdict(False)
+        alph_present = defaultdict(bool)
 
         for value in self.domains[y]:
             alph_present[value[y_overlap]] = True
@@ -142,7 +142,32 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        raise NotImplementedError
+
+        if arcs == None:
+            arcs = [(vars[0], vars[1]) for vars, overlap in self.crossword.items() if overlap]
+
+
+        adj = defaultdict(list)
+
+        for vars, overlap in self.crossword.overlaps.items():
+            if overlap:
+                adj[vars[0]].append(vars[1])
+                adj[vars[1]].append(vars[0])
+
+        while arcs:
+            x, y = arcs.pop()
+
+            reversed = self.revise(x, y)
+
+            if len(self.domains[x]) == 0:
+                return False
+
+            if reversed:
+                for var1 in adj[x]:
+                    for var2 in adj[var1]:
+                        arcs.append((var1, var2))
+        
+        return True
 
     def assignment_complete(self, assignment):
         """
