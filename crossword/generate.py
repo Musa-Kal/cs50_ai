@@ -121,13 +121,13 @@ class CrosswordCreator():
         
         revision = False
         x_overlap, y_overlap = self.crossword.overlaps[x, y]
-        alph_present = defaultdict(bool)
+        alph_present = set()
 
         for value in self.domains[y]:
-            alph_present[value[y_overlap]] = True
+            alph_present.add(value[y_overlap])
         
         for value in self.domains[x]:
-            if not alph_present[value[x_overlap]]:
+            if value[x_overlap] not in alph_present:
                 self.domains[x].remove[x]
                 revision = True
             
@@ -164,8 +164,8 @@ class CrosswordCreator():
 
             if reversed:
                 for var1 in adj[x]:
-                    for var2 in adj[var1]:
-                        arcs.append((var1, var2))
+                    if var1 != y:
+                        arcs.append((var1, x))
         
         return True
 
@@ -174,14 +174,20 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+        for var in self.crossword.variables:
+            if var not in assignment:
+                return False
+            
+        return True
 
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        raise NotImplementedError
+        
+
+        
 
     def order_domain_values(self, var, assignment):
         """
