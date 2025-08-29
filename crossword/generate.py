@@ -128,7 +128,7 @@ class CrosswordCreator():
         
         for value in self.domains[x]:
             if value[x_overlap] not in alph_present:
-                self.domains[x].remove[x]
+                self.domains[x].remove(value)
                 revision = True
             
         return revision
