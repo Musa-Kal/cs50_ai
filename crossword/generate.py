@@ -132,6 +132,16 @@ class CrosswordCreator():
                 revision = True
             
         return revision
+    
+
+    def __get_overlap_map(self):
+        adj = defaultdict(list)
+
+        for vars, overlap in self.crossword.overlaps.items():
+            if overlap:
+                adj[vars[0]].append(vars[1])
+        
+        return adj
 
     def ac3(self, arcs=None):
         """
@@ -147,11 +157,7 @@ class CrosswordCreator():
             arcs = [(vars[0], vars[1]) for vars, overlap in self.crossword.items() if overlap]
 
 
-        adj = defaultdict(list)
-
-        for vars, overlap in self.crossword.overlaps.items():
-            if overlap:
-                adj[vars[0]].append(vars[1])
+        adj = self.__get_overlap_map()
 
         while arcs:
             x, y = arcs.pop()
@@ -185,11 +191,7 @@ class CrosswordCreator():
         puzzle without conflicting characters); return False otherwise.
         """
         
-        overlaps = defaultdict(list)
-
-        for vars, overlap in self.crossword.overlaps.items():
-            if overlap:
-                overlaps[vars[0]].append(vars[1])
+        overlaps = self.__get_overlap_map()
         
         seen = set()
 
@@ -231,7 +233,23 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+
+        options = {}
+
+        overlaps = self.__get_overlap_map()
+
+        for var in self.crossword.variables:
+            if var in assignment:
+                continue
+            
+            options[var] = (len(self.domains[var]), len(overlaps[var]))
+
+        if options:
+            raise ValueError
+
+        return sorted(options.keys(), key=lambda var: options[var])[0]
+            
+        
 
     def backtrack(self, assignment):
         """
