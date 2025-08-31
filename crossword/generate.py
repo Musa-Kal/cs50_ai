@@ -152,7 +152,6 @@ class CrosswordCreator():
         for vars, overlap in self.crossword.overlaps.items():
             if overlap:
                 adj[vars[0]].append(vars[1])
-                adj[vars[1]].append(vars[0])
 
         while arcs:
             x, y = arcs.pop()
@@ -186,7 +185,33 @@ class CrosswordCreator():
         puzzle without conflicting characters); return False otherwise.
         """
         
+        overlaps = defaultdict(list)
 
+        for vars, overlap in self.crossword.overlaps.items():
+            if overlap:
+                overlaps[vars[0]].append(vars[1])
+        
+        seen = set()
+
+        for var, value in assignment.items():
+            if value in seen or len(value) != var.length:
+                return False
+            
+            seen.add(value)
+
+            if var not in overlaps:
+                continue
+
+            for overlapping_var in overlaps:
+                if overlapping_var not in assignment:
+                    continue
+                    
+                i1, i2 = self.crossword.overlaps[var, overlapping_var]
+
+                if value[i1] != assignment[overlapping_var][i2]:
+                    return False
+        
+        return True
         
 
     def order_domain_values(self, var, assignment):
