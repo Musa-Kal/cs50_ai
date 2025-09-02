@@ -4,6 +4,8 @@ from crossword import *
 
 from collections import defaultdict
 
+from copy import deepcopy
+
 
 class CrosswordCreator():
 
@@ -101,10 +103,12 @@ class CrosswordCreator():
         (Remove any values that are inconsistent with a variable's unary
          constraints; in this case, the length of the word.)
         """
+        new_domains = deepcopy(self.domains)
         for var in self.domains:
             for value in self.domains[var]:
                 if len(value) != var.length:
-                    self.domains[var].remove(value)
+                    new_domains[var].remove(value)
+        self.domains = new_domains
         
 
     def revise(self, x, y):
@@ -126,11 +130,16 @@ class CrosswordCreator():
         for value in self.domains[y]:
             alph_present.add(value[y_overlap])
         
+        new_domain = deepcopy(self.domains)
+
         for value in self.domains[x]:
             if value[x_overlap] not in alph_present:
-                self.domains[x].remove(value)
+                new_domain[x].remove(value)
                 revision = True
             
+        if revision:
+            self.domains = new_domain
+
         return revision
     
 
@@ -154,7 +163,7 @@ class CrosswordCreator():
         """
 
         if arcs == None:
-            arcs = [(vars[0], vars[1]) for vars, overlap in self.crossword.items() if overlap]
+            arcs = [(vars[0], vars[1]) for vars, overlap in self.crossword.overlaps.items() if overlap]
 
 
         adj = self.__get_overlap_map()
@@ -204,7 +213,7 @@ class CrosswordCreator():
             if var not in overlaps:
                 continue
 
-            for overlapping_var in overlaps:
+            for overlapping_var in overlaps[var]:
                 if overlapping_var not in assignment:
                     continue
                     
@@ -244,7 +253,7 @@ class CrosswordCreator():
             
             options[var] = (len(self.domains[var]), len(overlaps[var]))
 
-        if options:
+        if not options:
             raise ValueError
 
         return sorted(options.keys(), key=lambda var: options[var])[0]
@@ -260,7 +269,24 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+        if not self.consistent(assignment):
+            return None
+        if self.assignment_complete(assignment):
+            return assignment
+
+        unassigned_var = self.select_unassigned_variable(assignment)
+
+        for possible_value in self.order_domain_values(unassigned_var, assignment):
+            new_assignment = deepcopy(assignment)
+            new_assignment[unassigned_var] = possible_value
+
+            found_assignment = self.backtrack(new_assignment)
+
+            if found_assignment != None:
+                return found_assignment
+
+
+        return None
 
 
 def main():
