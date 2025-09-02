@@ -259,6 +259,7 @@ class CrosswordCreator():
 
                 possible_values_score[value] += unassigned_neighbors_domain_alpa_count[neighbor][value[i1]]
 
+
         return sorted(possible_values_score.keys(), key=lambda value: -possible_values_score[value])
 
 
