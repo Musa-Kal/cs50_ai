@@ -232,7 +232,36 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        return self.domains[var] # for test purpose will implement later
+
+        unassigned_neighbors = [overlapping_vars for overlapping_vars in self.__get_overlap_map()[var] if overlapping_vars not in assignment]
+
+        if not unassigned_neighbors:
+            return self.domains[var]
+
+        possible_values_score = {
+            value: 0
+            for value in self.domains[var]
+        }
+
+        unassigned_neighbors_domain_alpa_count = {
+            neighbor: defaultdict(int)
+            for neighbor in unassigned_neighbors
+        }
+
+        for neighbor in unassigned_neighbors:
+            i1, i2 = self.crossword.overlaps[var, neighbor]
+            for value in self.domains[neighbor]:
+                unassigned_neighbors_domain_alpa_count[neighbor][value[i2]] += 1
+
+        for value in possible_values_score:
+            for neighbor in unassigned_neighbors:
+                i1, i2 = self.crossword.overlaps[var, neighbor]
+
+                possible_values_score[value] += unassigned_neighbors_domain_alpa_count[neighbor][value[i1]]
+
+
+        return sorted(possible_values_score.keys(), key=lambda value: -possible_values_score[value])
+
 
     def select_unassigned_variable(self, assignment):
         """
@@ -277,13 +306,31 @@ class CrosswordCreator():
         unassigned_var = self.select_unassigned_variable(assignment)
 
         for possible_value in self.order_domain_values(unassigned_var, assignment):
-            new_assignment = deepcopy(assignment)
-            new_assignment[unassigned_var] = possible_value
+            # new_assignment = deepcopy(assignment)
+            # new_assignment[unassigned_var] = possible_value
 
-            found_assignment = self.backtrack(new_assignment)
+            # found_assignment = self.backtrack(new_assignment)
 
-            if found_assignment != None:
-                return found_assignment
+            assignment[unassigned_var] = possible_value
+            prev_domain = deepcopy(self.domains[unassigned_var])
+
+            self.domains[unassigned_var] = {possible_value}
+
+            arcs = [(overlapping_var, unassigned_var) for overlapping_var in self.__get_overlap_map()[unassigned_var]]
+
+            enforced = self.ac3(arcs)
+
+            self.domains[unassigned_var] = prev_domain
+
+            if not enforced:
+                continue
+
+            found = self.backtrack(assignment)
+
+            if found != None:
+                return assignment
+            else:
+                del assignment[unassigned_var]
 
 
         return None
