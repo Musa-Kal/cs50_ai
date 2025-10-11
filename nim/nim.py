@@ -133,12 +133,12 @@ class NimAI():
 
         pos_actions = Nim.available_actions(state)
         
-        best_action = 0
+        best_score = 0
 
         for action in pos_actions:
-            best_action = max(best_action, self.get_q_value(state, action))
+            best_score = max(best_score, self.get_q_value(state, action))
 
-        return best_action
+        return best_score
             
         
 
