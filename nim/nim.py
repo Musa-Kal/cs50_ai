@@ -132,17 +132,13 @@ class NimAI():
         """
 
         pos_actions = Nim.available_actions(state)
-
-        if len(pos_actions) == 0:
-            return 0
         
         best_action = 0
 
         for action in pos_actions:
+            best_action = max(best_action, self.get_q_value(state, action))
 
-            pile, objs = action
-
-
+        return best_action
             
         
 
