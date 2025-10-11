@@ -161,7 +161,7 @@ class NimAI():
         pos_actions = Nim.available_actions(state)
 
         if epsilon and random.random() < self.epsilon:
-            return random.choice(pos_actions)
+            return random.choice(list(pos_actions))
         
         best_action = None
         best_action_q_value = float('-inf')
