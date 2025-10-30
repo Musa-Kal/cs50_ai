@@ -3,6 +3,7 @@ import numpy as np
 import os
 import sys
 import tensorflow as tf
+from tqdm import tqdm
 
 from sklearn.model_selection import train_test_split
 
@@ -58,8 +59,37 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    raise NotImplementedError
+    
+    if (not data_dir or not os.path.exists(data_dir)):
+        raise ValueError("data_dir invalid or not provided!")
+    
+    dirs = os.listdir(data_dir)
+    labels = []
+    images = []
 
+    for i, curr_dir in tqdm(enumerate(dirs)):
+        curr_dir_path = os.path.join(data_dir, curr_dir)
+
+        if not os.path.isdir(curr_dir_path):
+            print(f"skipping {curr_dir_path} since it's not dir")
+            continue
+
+        labels.append(i-1)
+        
+        for img_file in os.listdir(curr_dir_path):
+
+            img_path = os.path.join(curr_dir_path, img_file)
+
+            if not os.path.isfile(img_path):
+                print(f"skipping {img_path} since it's not a file")
+                continue
+            
+            img = cv2.imread(img_path)
+            img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+            
+            images.append(img)
+    
+    return images, labels
 
 def get_model():
     """
@@ -71,4 +101,5 @@ def get_model():
 
 
 if __name__ == "__main__":
-    main()
+    print(load_data(r"gtsrb")[1])
+    # main()
