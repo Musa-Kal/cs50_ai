@@ -3,6 +3,7 @@ import numpy as np
 import os
 import sys
 import tensorflow as tf
+import keras
 from tqdm import tqdm
 
 from sklearn.model_selection import train_test_split
@@ -87,7 +88,7 @@ def load_data(data_dir):
             img = cv2.imread(img_path)
             img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
             
-            images.append(img)
+            images.append(img/255)
     
     return images, labels
 
@@ -97,9 +98,21 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    
+    input_layer = keras.Input(shape=(IMG_WIDTH, IMG_HEIGHT, 3))
+    x = keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu", padding="same")(input_layer)
+    x = keras.layers.MaxPool2D(2)(x)
+    x = keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu', padding="same")(x)
+    x = keras.layers.MaxPool2D(2)(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(128, activation='relu')(x)
+    output = keras.layers.Dense(43, activation='softmax')(x)
+    model = keras.models.Model(input_layer, output)
+    model.compile(loss='mse', optimizer='adam')
+    return model
+    
+
 
 
 if __name__ == "__main__":
-    print(load_data(r"gtsrb")[1])
-    # main()
+    main()
