@@ -74,8 +74,6 @@ def load_data(data_dir):
         if not os.path.isdir(curr_dir_path):
             print(f"skipping {curr_dir_path} since it's not dir")
             continue
-
-        labels.append(i-1)
         
         for img_file in os.listdir(curr_dir_path):
 
@@ -89,6 +87,7 @@ def load_data(data_dir):
             img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
             
             images.append(img/255)
+            labels.append(i-1)
     
     return images, labels
 
