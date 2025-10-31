@@ -99,9 +99,9 @@ def get_model():
     """
     
     input_layer = keras.Input(shape=(IMG_WIDTH, IMG_HEIGHT, 3))
-    x = keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu", padding="same")(input_layer)
+    x = keras.layers.Conv2D(30, kernel_size=(3, 3), activation="relu", padding="same")(input_layer)
     x = keras.layers.MaxPool2D(2)(x)
-    x = keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu', padding="same")(x)
+    x = keras.layers.Conv2D(60, kernel_size=(3, 3), activation='relu', padding="same")(x)
     x = keras.layers.MaxPool2D(2)(x)
     x = keras.layers.Flatten()(x)
     x = keras.layers.Dense(128, activation='relu')(x)
